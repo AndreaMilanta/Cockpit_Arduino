@@ -1,23 +1,26 @@
 #pragma once
 #include <Arduino.h>
 
-#define MINIMUM_DELTA_TIME 100  // minimu duration between two consecutive interrupts
+#define ENCODER_DT 1  // delta t between consecutive pinvalue checks
 
 class Encoder
 {
 private:
-    uint8_t _pinA, _pinB;
-    int16_t _maxVal, _minVal;
-    volatile int16_t _value;
-    uint16_t _step;
-    volatile uint32_t _time;
+    uint8_t _pinA, _pinB, _pinSW;
+    uint16_t _pushedTicks;
+    volatile uint16_t _pushedCounter;
+    double _maxVal, _minVal;
+    volatile double _value;
+    double _step, _stepPush;
+    volatile boolean _changedA, _changedSW, _pushed;
+    volatile boolean _valA;
 
 public:
-    Encoder(uint8_t pinA, uint8_t pinB, int16_t maxVal, int16_t minVal, uint16_t step);
-    void setValue(int16_t value);
-    void setDeltaValue(int16_t delta);
-    int16_t getValue(void);
-    void update(void);
+    Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinSW, double maxVal, double minVal, double step, double stepPush, uint16_t pushedTime);
+    void setValue(double value);
+    void setDeltaValue(double delta);
+    double getValue(void);
+    boolean update(void);
     ~Encoder();
 };
 

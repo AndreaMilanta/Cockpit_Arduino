@@ -19,15 +19,19 @@
 #define DATA_PIN 11
 #define ENCODER_A 2
 #define ENCODER_B 4
+#define ENCODER_SW 6
 
-volatile int16_t sevSegCounter = 0;
-volatile int16_t countdownCounter = COUNTDOWN_RATE;
+//Counters
+volatile int16_t sevSegCounter = 1;
+volatile int16_t encCounter = 1;
+volatile int16_t countdownCounter = 1;
+
 volatile double value = COUNTDOWN;
 
 SevenSegDisplay disp(DATA_PIN, CLOCK_PIN, LATCH_PIN, 5, CATHODE);
 //SevenSegDisplay disp(DATA_PIN, CLOCK_PIN, LATCH_PIN, 3, ANODE);
 
-//Encoder enc(ENCODER_A, ENCODER_B, 200, -200, -1);
+Encoder enc(ENCODER_A, ENCODER_B, ENCODER_SW, 132.00, 118.00, 1.00, 0.25, 10);
 
 // the setup function runs once when you press reset or power the board
 void setup() 
@@ -35,6 +39,7 @@ void setup()
     Serial.begin(115200);
     Timer1.initialize(1000);        // 1ms timer interrupt
     Timer1.attachInterrupt(onTimer1Interrupt);
+    disp.writeDouble(enc.getValue(), 2, false);
 //    attachInterrupt(digitalPinToInterrupt(ENCODER_A), onInterrupt0, CHANGE);
 }
 
@@ -47,6 +52,7 @@ void onTimer1Interrupt()
 {
     sevSegCounter--;
     countdownCounter--;
+    encCounter--;
 
     //seven segment code
     if (sevSegCounter <= 0){
@@ -54,9 +60,16 @@ void onTimer1Interrupt()
         sevSegCounter = disp.getDt();
     }
 
+    //encoder code
+    if (encCounter <= 0) {
+        if(enc.update())
+            disp.writeDouble(enc.getValue(), 2, false);
+        encCounter = ENCODER_DT;
+    }
+
     //countdown code
     if (countdownCounter <= 0) {
-        disp.writeDouble(value, 2, false);
+        //disp.writeDouble(value, 2, false);
         //disp.writeInt(uint16_t(value), false);
         value -= 0.01L;
         if (value < 0)
