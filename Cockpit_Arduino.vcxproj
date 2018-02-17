@@ -82,11 +82,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Channel.h" />
+    <ClInclude Include="ChannelsID.h" />
     <ClInclude Include="Encoder.h" />
     <ClInclude Include="SevenSegDisplay.h" />
     <ClInclude Include="__vm\.Cockpit_Arduino.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Channel.cpp" />
     <ClCompile Include="Encoder.cpp" />
     <ClCompile Include="SevenSegDisplay.cpp" />
   </ItemGroup>

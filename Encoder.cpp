@@ -1,8 +1,10 @@
 #include "Encoder.h"
 
-// pushedTime is time in second for which pushed lasts
-Encoder::Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinSW, double maxVal, double minVal, double step, double stepPush, uint16_t pushedTime)
+// pushedTime is time in second for which pushed lasts, round iff when overflows goes back to min and viceversa
+Encoder::Encoder(ChanId chan, uint8_t pinA, uint8_t pinB, uint8_t pinSW, double maxVal, double minVal, double step, double stepPush, uint16_t pushedTime, boolean round)
 {
+    _round = round;
+    _chan.setId(chan);
     _pinA = pinA;
     _pinB = pinB;
     _pinSW = pinSW;
@@ -22,8 +24,11 @@ Encoder::Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinSW, double maxVal, doubl
 
 void Encoder::setValue(double value)
 {
-    _value = value < _minVal ? _minVal : value;
-    _value = value > _maxVal ? _maxVal : _value;
+    _value = value;
+    if (_value < _minVal)
+        _value = round ? _maxVal : _minVal;
+    if (_value > _maxVal)
+        _value = round ? _minVal : _maxVal;
 }
 
 void Encoder::setDeltaValue(double delta)
@@ -61,12 +66,9 @@ boolean Encoder::update(void)
     currStep = _pushed ? _stepPush : _step;
     if (_changedA)
     {
-        if (a == _valA)
+        if (a == _valA && a)
         {
-            if (a)
-                b ? setDeltaValue(currStep) : setDeltaValue(-currStep);
-            //else
-              //  b ? setDeltaValue(-_step) : setDeltaValue(_step);
+            b ? setDeltaValue(currStep) : setDeltaValue(-currStep);
             hasChanged = true;
         }
         _changedA = false;
@@ -78,6 +80,11 @@ boolean Encoder::update(void)
     }
     _valA = a;
     return hasChanged;
+}
+
+uint8_t * Encoder::toString()
+{
+    return _chan.dbl2str(_value);
 }
 
 Encoder::~Encoder()
